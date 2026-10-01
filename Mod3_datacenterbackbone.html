@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCNA Arcade - Level 1.3: Fiber Optic Media & Transceivers</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-dark: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-red: #f87171;
+            --accent-purple: #c084fc;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 { color: var(--accent-blue); font-size: 2rem; margin-bottom: 5px; letter-spacing: 1px; }
+        h2 { color: var(--text-muted); font-size: 1.1rem; font-weight: 400; }
+
+        .container {
+            width: 100%;
+            max-width: 950px;
+            background-color: var(--panel-dark);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 1px solid #334155;
+            position: relative;
+            min-height: 550px;
+        }
+
+        .screen { display: none; }
+        .screen.active { display: flex; flex-direction: column; }
+
+        .lesson-text { line-height: 1.6; margin-bottom: 20px; color: #cbd5e1; }
+        
+        .spec-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .spec-box {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #334155;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .spec-box h3 { color: var(--accent-purple); font-size: 1rem; margin-bottom: 8px; text-transform: uppercase;}
+        .spec-box p { font-size: 0.88rem; line-height: 1.5; color: var(--text-muted); }
+        .spec-box strong { color: var(--text-light); }
+
+        .btn {
+            background-color: var(--accent-blue);
+            color: var(--bg-dark);
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            align-self: center;
+            margin-top: 10px;
+        }
+        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+
+        .game-hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: bold; font-size: 1.1rem; }
+        
+        .simulator-layout { display: flex; gap: 20px; margin-bottom: 15px; }
+        
+        .canvas-area {
+            flex: 1.2;
+            height: 300px;
+            background: #020617;
+            border-radius: 8px;
+            border: 1px dashed #475569;
+            position: relative;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .device-node { display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 2; }
+        .device-label { font-family: monospace; font-size: 0.85rem; color: var(--accent-purple); background: rgba(15, 23, 42, 0.8); padding: 2px 8px; border-radius: 4px; border: 1px solid #334155; }
+
+        .cable-svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        
+        .sidebar-controls { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+        .game-scenario { font-size: 0.95rem; color: #f1f5f9; padding: 12px; background: #0f172a; border-radius: 6px; border-left: 3px solid var(--accent-purple); min-height: 80px; line-height: 1.4; }
+        
+        .media-card {
+            background: #020617;
+            border: 2px solid #475569;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .media-card:hover { border-color: var(--accent-purple); background: #0f172a; }
+        .media-card h4 { color: var(--accent-purple); font-size: 0.95rem; margin-bottom: 2px; }
+        .media-card p { font-size: 0.8rem; color: var(--text-muted); }
+
+        .question-text { font-size: 1.2rem; margin-bottom: 20px; font-weight: 500; line-height: 1.5; }
+        .options-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+        
+        .option-item {
+            background: #334155;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #475569;
+            transition: background 0.2s;
+        }
+        .option-item:hover { background: #475569; }
+        .option-item.correct { background-color: rgba(74, 222, 128, 0.2); border-color: var(--accent-green); }
+        .option-item.wrong { background-color: rgba(248, 113, 113, 0.2); border-color: var(--accent-red); }
+        .explanation { background: #020617; padding: 15px; border-radius: 6px; margin-top: 20px; display: none; line-height: 1.5; font-size: 0.95rem; }
+
+        .dash-card { text-align: center; padding: 20px 0; }
+        .score-display { font-size: 3rem; color: var(--accent-green); font-weight: bold; margin: 15px 0; }
+        .save-indicator { font-size: 0.9rem; color: var(--accent-blue); font-style: italic; margin-top: 15px; }
+
+        footer { margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); text-align: center; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CCNA ARCADE</h1>
+        <h2>Stage 1 • Level 1.3: Fiber Optic Media & Transceivers (Cisco NetAcad ITN Deep-Dive)</h2>
+    </header>
+
+    <div class="container">
+        <!-- STEP 1: LESSON SCREEN -->
+        <div id="screen-lesson" class="screen active">
+            <p class="lesson-text">
+                Welcome to <strong>OSI Layer 1: Optical Infrastructure</strong>. Unlike copper, fiber optic cabling transmits data via light pulses, rendering networks immune to RFI and EMI while supporting much higher bandwidths over extended distances.
+            </p>
+            
+            <div class="spec-grid">
+                <div class="spec-box">
+                    <h3>1. Multimode Fiber (MMF)</h3>
+                    <p>
+                        • <strong>Core Profile:</strong> Larger core (usually 50/62.5 microns).<br>
+                        • <strong>Light Source:</strong> LEDs.<br>
+                        • <strong>Distance & Application:</strong> Shorter distances (up to 550m at 10Gbps). Ideal for LAN backbones and data center racks.
+                    </p>
+                </div>
+                <div class="spec-box">
+                    <h3>2. Single-Mode Fiber (SMF)</h3>
+                    <p>
+                        • <strong>Core Profile:</strong> Extremely narrow core (9 microns).<br>
+                        • <strong>Light Source:</strong> Laser diodes.<br>
+                        • <strong>Distance & Application:</strong> Long distances (up to 100km+). Used for enterprise campus backbones and service provider WANs.
+                    </p>
+                </div>
+                <div class="spec-box">
+                    <h3>3. Connectors (LC vs. SC)</h3>
+                    <p>
+                        • <strong>LC (Lucent/Little Connector):</strong> Small-form factor duplex connector utilizing a push-pull latch design; widely used with modern SFP modules.<br>
+                        • <strong>SC (Subscriber/Square Connector):</strong> A larger snap-in connector utilizing a push-pull locking mechanism.
+                    </p>
+                </div>
+                <div class="spec-box">
+                    <h3>4. SFP Transceiver Modules</h3>
+                    <p>
+                        • <strong>Hot-Swappable:</strong> Allows network engineers to swap modules without powering down switches or routers.<br>
+                        • <strong>Media Flexibility:</strong> Enables a single modular port to accept copper (RJ-45) or fiber (LC variants like 1000BASE-SX/LX) adapters.
+                    </p>
+                </div>
+            </div>
+
+            <button class="btn" onclick="startGameplay()">Initialize Optical Matrix Tool</button>
+        </div>
+
+        <!-- STEP 2: GAMEPLAY SIMULATOR SCREEN -->
+        <div id="screen-game" class="screen">
+            <div class="game-hud">
+                <button class="btn" style="padding: 6px 12px; font-size: 0.85rem; margin: 0; background-color: #475569; color: var(--text-light);" onclick="resetToLesson()">◀ Return to Lesson</button>
+                <div>Optical Links: <span id="hud-score">0</span>/4 Calibrated</div>
+                <div style="color: var(--accent-purple);">Fiber Topology Canvas</div>
+            </div>
+            
+            <div class="simulator-layout">
+                <div class="canvas-area">
+                    <svg class="cable-svg-layer">
+                        <line id="topo-cable" x1="120" y1="150" x2="380" y2="150" stroke="#334155" stroke-width="4"/>
+                    </svg>
+
+                    <div class="device-node">
+                        <div id="src-svg-wrapper"></div>
+                        <div class="device-label" id="lbl-src">Source_Node</div>
+                    </div>
+
+                    <div class="device-node">
+                        <div id="dst-svg-wrapper"></div>
+                        <div class="device-label" id="lbl-dst">Destination_Node</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-controls">
+                    <div id="scenario-text" class="game-scenario">Evaluating optical connection requirements...</div>
+                    <div class="media-options">
+                        <div class="media-card" onclick="handleDecision('mmf')">
+                            <h4>Multimode Fiber (MMF) + LED</h4>
+                            <p>Best for shorter internal building runs up to 500m using cost-effective LED light sources.</p>
+                        </div>
+                        <div class="media-card" onclick="handleDecision('smf')">
+                            <h4>Single-Mode Fiber (SMF) + Laser</h4>
+                            <p>Required for ultra-long distance inter-city or campus links using precision laser optics.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: EXAM SCREEN -->
+        <div id="screen-quiz" class="screen">
+            <div class="quiz-container">
+                <div class="game-hud">
+                    <button class="btn" style="padding: 6px 12px; font-size: 0.85rem; margin: 0; background-color: #475569; color: var(--text-light);" onclick="resetToLesson()">◀ Abort Exam to Review</button>
+                    <div style="color: var(--accent-purple);">OFFICIAL CISCO NETACAD OPTICAL CERTIFICATION</div>
+                </div>
+                <div id="quiz-question" class="question-text">Verifying fiber optic parameters...</div>
+                <ul class="options-list" id="quiz-options"></ul>
+                <div id="quiz-explanation" class="explanation"></div>
+                <button id="quiz-next-btn" class="btn" style="display:none;" onclick="handleQuizNext()">Submit Next Question</button>
+            </div>
+        </div>
+
+        <!-- STEP 4: DASHBOARD OUTCOME -->
+        <div id="screen-dash" class="screen">
+            <div class="dash-card">
+                <h3 style="font-size: 1.8rem; color: var(--accent-green);">Level Complete! Optical Architecture Mastered</h3>
+                <p style="margin-top: 10px; color: var(--text-muted);">You successfully achieved 100% compliance across Cisco ITN Module 4 fiber media matrix standards.</p>
+                <div class="score-display">100% CERTIFIED</div>
+                <div class="save-indicator">💾 Auto-Save Synchronized: localStorage.ccna_level_1_3 = "NetAcad_Fiber_Mastered"</div>
+                <button class="btn" style="margin-top:25px;" onclick="resetToLesson()">Re-run Module</button>
+            </div>
+        </div>
+    </div>
+    <footer>
+        &copy; 2026 CCNA Arcade Project Plan. Fully Aligned with Cisco Objectives. All Rights Reserved.
+    </footer>
+    <script>
+        const deviceSVGs = {
+            switch: `<svg width="74" height="54" viewBox="0 0 74 54" fill="none">
+                        <rect x="4" y="10" width="66" height="34" rx="4" fill="#1e1b4b" stroke="#c084fc" stroke-width="2"/>
+                        <circle cx="16" cy="27" r="4" fill="#c084fc"/><circle cx="28" cy="27" r="4" fill="#c084fc"/><circle cx="40" cy="27" r="4" fill="#c084fc"/>
+                        <rect x="52" y="20" width="6" height="6" fill="#0f172a" stroke="#64748b"/>
+                        <rect x="60" y="20" width="6" height="6" fill="#0f172a" stroke="#64748b"/>
+                     </svg>`,
+            router: `<svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                        <circle cx="32" cy="32" r="24" fill="#581c87" stroke="#e879f9" stroke-width="2"/>
+                        <path d="M16 32H48 M22 26L16 32L22 38 M42 26L48 32L42 38" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                     </svg>`
+        };
+
+        const scenarios = [
+            { text: "Deploy an internal high-speed backbone link connecting Switch A on floor 1 to Switch B on floor 3 within the same enterprise building (distance ~300 meters).", target: "mmf", srcType: "switch", dstType: "switch", srcLabel: "Floor_1_Switch", dstLabel: "Floor_3_Switch", lineColor: "#c084fc" },
+            { text: "Connect two regional corporate headquarters buildings separated by a 15-kilometer geographic distance using dedicated optical infrastructure channels.", target: "smf", srcType: "router", dstType: "router", srcLabel: "HQ_East_Router", dstLabel: "HQ_West_Router", lineColor: "#e879f9" },
+            { text: "Establish a high-density server rack aggregation link across a local enterprise data center floor zone spanning roughly 200 meters.", target: "mmf", srcType: "switch", dstType: "switch", srcLabel: "Rack_Switch_1", dstLabel: "Rack_Switch_2", lineColor: "#c084fc" },
+            { text: "Link a metropolitan edge distribution router directly into a long-haul telecom provider optical ring spanning 40 kilometers.", target: "smf", srcType: "router", dstType: "switch", srcLabel: "Metro_Edge_Router", dstLabel: "Provider_Core", lineColor: "#e879f9" }
+        ];
+
+        const quizPool = [
+            {
+                q: "Which fiber optic cabling type utilizes a very narrow core (approximately 9 microns) paired with laser diodes to transmit light signals over long distances exceeding several kilometers?",
+                options: ["Multimode Fiber (MMF)", "Single-Mode Fiber (SMF)", "Shielded Twisted-Pair (STP)", "Coaxial Broadband Cable"], answer: 1,
+                exp: "<h3>📚 TERM BREAKDOWN ANALYSIS:</h3>• <strong>Single-Mode Fiber (SMF) (CORRECT):</strong> Uses a tiny core and laser optics to minimize modal dispersion, allowing data to travel over tens or hundreds of kilometers.<br><br>• <strong>Multimode Fiber (MMF):</strong> Uses a larger core and LEDs, resulting in higher modal dispersion and restricting distances to shorter runs (typically under 550m).<br><br>• <strong>Shielded Twisted-Pair:</strong> A copper-based medium, not an optical fiber.<br><br>• <strong>Coaxial Broadband:</strong> Legacy copper cabling used primarily for cable television and old 10BASE2/5 networks."
+            },
+            {
+                q: "A network technician is installing modern SFP transceivers into a Cisco switch stack. Which fiber connector type features a small form-factor duplex push-pull design that is standard for modern fiber SFP modules?",
+                options: ["SC Connector", "LC Connector", "ST Bayonet Connector", "RJ-45 Modular Plug"], answer: 1,
+                exp: "<h3>📚 TERM BREAKDOWN ANALYSIS:</h3>• <strong>LC Connector (CORRECT):</strong> The Lucent Connector (LC) is a small form-factor duplex connector widely used with modern SFP transceivers due to its compact size.<br><br>• <strong>SC Connector:</strong> A square connector utilizing a push-pull mechanism, but bulkier than the LC standard.<br><br>• <strong>ST Connector:</strong> A legacy bayonet-style circular connector common in older multimode networks.<br><br>• <strong>RJ-45 Plug:</strong> Standard copper modular plug, incompatible with fiber SFP ports."
+            },
+            {
+                q: "Why are hot-swappable SFP (Small Form-Factor Pluggable) transceiver modules heavily preferred in enterprise Cisco catalyst switch configurations?",
+                options: ["They allow engineers to change interface media types or replace failed modules without powering down the device.", "They automatically convert standard copper UTP signals into wireless Wi-Fi 7 broadcast packets.", "They eliminate the 100-meter distance limitation for standard category copper patch cables.", "They provide internal power backup supplies to keep switches running during power outages."], answer: 0,
+                exp: "<h3>📚 TERM BREAKDOWN ANALYSIS:</h3>• <strong>Hot-Swappable Advantage (CORRECT):</strong> SFP modules can be inserted or removed live without rebooting the switch, enabling flexible transitions between copper and various fiber specifications on the fly.<br><br>• <strong>Wireless Conversion:</strong> SFPs do not convert physical wired ports into wireless signals.<br><br>• <strong>Copper Distance Limitation:</strong> Copper UTP limits remain bound by physical electronics and Cat standards regardless of SFP modules.<br><br>• <strong>Power Backup:</strong> SFPs do not function as uninterruptible power supply (UPS) batteries."
+            }
+        ];
+        let currentScore = 0;
+        let currentQuizIndex = 0;
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGameplay() {
+            currentScore = 0;
+            document.getElementById('hud-score').innerText = currentScore;
+            
+            const cable = document.getElementById('topo-cable');
+            cable.setAttribute('stroke', '#334155');
+            cable.setAttribute('stroke-dasharray', '0');
+            
+            showScreen('screen-game');
+            updateScenario();
+        }
+
+        function updateScenario() {
+            if (currentScore >= scenarios.length) {
+                startQuizPhase();
+                return;
+            }
+            const currentItem = scenarios[currentScore];
+            document.getElementById('scenario-text').innerText = currentItem.text;
+            document.getElementById('lbl-src').innerText = currentItem.srcLabel;
+            document.getElementById('lbl-dst').innerText = currentItem.dstLabel;
+            
+            document.getElementById('src-svg-wrapper').innerHTML = deviceSVGs[currentItem.srcType];
+            document.getElementById('dst-svg-wrapper').innerHTML = deviceSVGs[currentItem.dstType];
+            
+            const cable = document.getElementById('topo-cable');
+            cable.setAttribute('stroke', '#334155');
+            cable.setAttribute('stroke-dasharray', '0');
+        }
+
+        function handleDecision(playerChoice) {
+            const currentItem = scenarios[currentScore];
+            const correctAnswer = currentItem.target;
+            const cable = document.getElementById('topo-cable');
+            
+            if (playerChoice === correctAnswer) {
+                cable.setAttribute('stroke', currentItem.lineColor);
+                if (currentItem.target === 'smf') {
+                    cable.setAttribute('stroke-dasharray', '8');
+                } else {
+                    cable.setAttribute('stroke-dasharray', '0');
+                }
+                
+                currentScore++;
+                document.getElementById('hud-score').innerText = currentScore;
+                setTimeout(updateScenario, 1200);
+            } else {
+                alert(`Optical Attenuation/Dispersion Mismatch! Verify distance parameters against LED vs. Laser core limitations.`);
+            }
+        }
+
+        function startQuizPhase() {
+            currentQuizIndex = 0;
+            showScreen('screen-quiz');
+            loadQuizQuestion();
+        }
+
+        function loadQuizQuestion() {
+            const currentQ = quizPool[currentQuizIndex];
+            document.getElementById('quiz-question').innerText = currentQ.q;
+            document.getElementById('quiz-explanation').style.display = "none";
+            document.getElementById('quiz-next-btn').style.display = "none";
+            
+            const optionsUl = document.getElementById('quiz-options');
+            optionsUl.innerHTML = "";
+            
+            currentQ.options.forEach((opt, idx) => {
+                const li = document.createElement('li');
+                li.className = "option-item";
+                li.innerText = opt;
+                li.onclick = () => evaluationSelection(idx, li);
+                optionsUl.appendChild(li);
+            });
+        }
+
+        function evaluationSelection(chosenIdx, element) {
+            const currentQ = quizPool[currentQuizIndex];
+            const items = document.querySelectorAll('.option-item');
+            
+            items.forEach(item => item.onclick = null);
+            
+            if (chosenIdx === currentQ.answer) {
+                element.classList.add('correct');
+            } else {
+                element.classList.add('wrong');
+                items[currentQ.answer].classList.add('correct');
+            }
+            
+            const expBox = document.getElementById('quiz-explanation');
+            expBox.innerHTML = currentQ.exp;
+            expBox.style.display = "block";
+            document.getElementById('quiz-next-btn').style.display = "block";
+        }
+
+        function handleQuizNext() {
+            currentQuizIndex++;
+            if (currentQuizIndex < quizPool.length) {
+                loadQuizQuestion();
+            } else {
+                triggerAutosaveAndComplete();
+            }
+        }
+
+        function triggerAutosaveAndComplete() {
+            try {
+                localStorage.setItem('ccna_level_1_3', 'NetAcad_Fiber_Mastered');
+            } catch(e) {
+                console.log("Local browser serialization fallback tracking bypassed.");
+            }
+            showScreen('screen-dash');
+        }
+
+        function resetToLesson() {
+            showScreen('screen-lesson');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCNA Arcade - Professional NetAcad Suite v4</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-dark: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-red: #f87171;
+            --accent-purple: #c084fc;
+            --accent-orange: #fb923c;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-light); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        header { background: #020617; padding: 12px 20px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+        h1 { color: var(--accent-blue); font-size: 1.2rem; }
+        p.sub { font-size: 0.8rem; color: var(--text-muted); }
+
+        .nav-tabs { display: flex; gap: 8px; align-items: center; }
+        .tab-btn {
+            background: #1e293b; border: 1px solid #475569; color: var(--text-muted);
+            padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600;
+            transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center;
+        }
+        .tab-btn.active { background: var(--accent-blue); color: var(--bg-dark); border-color: var(--accent-blue); }
+
+        .container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        .screen { display: none; flex: 1; padding: 20px; overflow-y: auto; }
+        .screen.active { display: flex; flex-direction: column; }
+
+        /* Lesson Styles */
+        .lesson-text { line-height: 1.6; margin-bottom: 15px; color: #cbd5e1; font-size: 0.95rem; }
+        .spec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .spec-box { background: rgba(30, 41, 59, 0.6); border: 1px solid #334155; padding: 15px; border-radius: 8px; }
+        .spec-box h3 { color: var(--accent-blue); font-size: 0.95rem; margin-bottom: 8px; text-transform: uppercase; }
+        .spec-box p { font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); }
+        .spec-box strong { color: var(--text-light); }
+
+        /* Simulator Styles */
+        .simulator-layout { display: flex; flex: 1; gap: 15px; height: 100%; overflow: hidden; }
+        .toolbox { width: 250px; background: var(--panel-dark); border: 1px solid #334155; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .toolbox h3 { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
+        
+        .tool-item {
+            background: #0f172a; border: 1px solid #475569; padding: 8px; border-radius: 6px; cursor: grab;
+            display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 500;
+        }
+        .tool-item:hover { border-color: var(--accent-blue); }
+
+        .level-select { background: #0f172a; border: 1px solid var(--accent-orange); color: var(--accent-orange); padding: 8px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; width: 100%; }
+
+        .canvas-area { flex: 1; background: #020617; border-radius: 8px; border: 1px dashed #475569; position: relative; overflow: auto; cursor: crosshair; }
+        svg.connections-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+
+        .node {
+            position: absolute; width: 90px; height: 80px; background: var(--panel-dark);
+            border: 2px solid #475569; border-radius: 8px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; cursor: move; user-select: none; z-index: 2;
+            padding: 5px; text-align: center;
+        }
+        .node.selected { border-color: var(--accent-green); box-shadow: 0 0 10px rgba(74,222,128,0.4); }
+        .node span { font-size: 0.7rem; margin-top: 4px; font-family: monospace; color: var(--text-light); }
+
+        /* Quiz Styles */
+        .quiz-container { max-width: 800px; margin: 0 auto; width: 100%; }
+        .question-text { font-size: 1.05rem; margin-bottom: 15px; font-weight: 600; line-height: 1.4; color: var(--text-light); }
+        .options-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .option-item { background: #1e293b; padding: 10px 14px; border-radius: 6px; cursor: pointer; border: 1px solid #475569; font-size: 0.9rem; transition: background 0.2s; }
+        .option-item:hover { background: #334155; }
+        .option-item.correct { background-color: rgba(74, 222, 128, 0.25); border-color: var(--accent-green); }
+        .option-item.wrong { background-color: rgba(248, 113, 113, 0.25); border-color: var(--accent-red); }
+        
+        .breakdown-box { background: #020617; padding: 12px; border-radius: 6px; margin-top: 12px; font-size: 0.85rem; line-height: 1.4; border: 1px solid #334155; display: none; }
+        .breakdown-item { margin-bottom: 6px; }
+
+        .btn { background-color: var(--accent-blue); color: var(--bg-dark); border: none; padding: 8px 16px; font-weight: 600; border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.85rem; }
+        .btn:hover { opacity: 0.9; }
+        .btn-danger { background-color: var(--accent-red); color: white; }
+
+        .badge { display: inline-block; background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>CCNA ARCADE</h1>
+            <p class="sub">Interactive Networking Academy & Simulator</p>
+        </div>
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchScreen('lesson', this)">1. NetAcad Lessons</button>
+            <button class="tab-btn" onclick="switchScreen('simulator', this)">2. Packet Tracer Workspace</button>
+            <button class="tab-btn" onclick="switchScreen('quiz', this)">3. Certification Exam</button>
+            <!-- Example link to another HTML file -->
+            <a href="ccna_arcade_hub.html" class="tab-btn" style="background: #1e3a8a; border-color: #38bdf8; color: #38bdf8;">📂 Module Hub</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- SCREEN 1: LESSON -->
+        <div id="screen-lesson" class="screen active">
+            <div class="badge" id="lesson-badge">CURRICULUM MODULE: LEVEL 1.1 - PHYSICAL LAYER & GATEWAYS</div>
+            <p class="lesson-text" id="lesson-desc">
+                Welcome beginner network engineer! Imagine a postal system: <strong>Hosts (PCs)</strong> write letters, <strong>Switches</strong> deliver mail within the same local building (LAN), and <strong>Routers</strong> are post offices sending mail across separate cities (WAN/Internet). At the Physical Layer (OSI Layer 1), data bits are converted into electrical pulses, light flashes, or radio waves.
+            </p>
+            <div class="spec-grid" id="lesson-grid">
+                <div class="spec-box">
+                    <h3>1. Understanding Core Devices</h3>
+                    <p>• <strong>Host PC:</strong> An end-user node generating traffic.<br>• <strong>Layer 2 Switch:</strong> Connects devices on the same LAN using MAC addresses.<br>• <strong>Router:</strong> Acts as the gateway between different networks using IP addresses.</p>
+                </div>
+                <div class="spec-box">
+                    <h3>2. Performance Metrics</h3>
+                    <p>• <strong>Bandwidth:</strong> Maximum theoretical capacity (e.g., 1 Gbps).<br>• <strong>Throughput:</strong> Actual measured speed right now.<br>• <strong>Goodput:</strong> Usable application speed after removing headers.</p>
+                </div>
+                <div class="spec-box">
+                    <h3>3. Copper Media & Crosstalk</h3>
+                    <p>• <strong>UTP Copper Cables:</strong> Unshielded twisted pairs.<br>• <strong>Twisting:</strong> Cancels out outside electromagnetic interference (EMI).</p>
+                </div>
+                <div class="spec-box">
+                    <h3>4. Fiber-Optic Technologies</h3>
+                    <p>• <strong>Single-Mode (SMF):</strong> Lasers, long distance (100km).<br>• <strong>Multimode (MMF):</strong> LEDs, datacenters (550m).</p>
+                </div>
+            </div>
+            <button class="btn" style="align-self: flex-start;" onclick="switchScreen('simulator', document.querySelectorAll('.tab-btn')[1])">Proceed to Packet Tracer Workspace ➔</button>
+        </div>
+
+        <!-- SCREEN 2: PACKET TRACER SIMULATOR -->
+        <div id="screen-simulator" class="screen">
+            <div class="simulator-layout">
+                <div class="toolbox">
+                    <h3>Select Level</h3>
+                    <select id="level-dropdown" class="level-select" onchange="changeLevel(this.value)">
+                        <option value="1.1">Level 1.1: Router & Switch Gateway</option>
+                        <option value="1.2">Level 1.2: Multi-Switch Topology</option>
+                        <option value="1.3">Level 1.3: Fiber Data-Center Backbone</option>
+                    </select>
+
+                    <h3 style="margin-top: 5px;">Device Inventory</h3>
+                    <div class="tool-item" draggable="true" ondragstart="drag(event, 'PC')">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        Host PC
+                    </div>
+                    <div class="tool-item" draggable="true" ondragstart="drag(event, 'Switch')">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="6" cy="12" r="1"/><circle cx="10" cy="12" r="1"/><circle cx="14" cy="12" r="1"/></svg>
+                        L2 Switch
+                    </div>
+                    <div class="tool-item" draggable="true" ondragstart="drag(event, 'Router')">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+                        Router
+                    </div>
+                    
+                    <h3 style="margin-top: 5px;">Cabling Tool</h3>
+                    <div class="tool-item" id="btn-cable" onclick="toggleCableMode()" style="background: #1e3a8a; border-color: #38bdf8; color: #38bdf8; cursor: pointer;">
+                        🔌 <span id="cable-mode-text">Connect Cable</span>
+                    </div>
+
+                    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 6px;">
+                        <button class="btn" onclick="validateChallenge()" style="font-size: 0.8rem;">Validate Challenge</button>
+                        <button class="btn btn-danger" onclick="clearCanvas()" style="font-size: 0.8rem;">Clear Canvas</button>
+                    </div>
+                </div>
+
+                <div class="canvas-area" id="canvas" ondragover="allowDrop(event)" ondrop="drop(event)">
+                    <div id="challenge-instructions" style="position: absolute; top: 10px; left: 10px; font-size: 0.75rem; color: var(--text-light); pointer-events: none; background: rgba(15,23,42,0.9); padding: 8px 12px; border-radius: 6px; border: 1px solid #334155; z-index: 3; max-width: 420px; line-height: 1.4;">
+                        <strong>Strict Challenge (Level 1.1):</strong> Connect a <strong>Router</strong> directly to a <strong>Layer 2 Switch</strong>, AND connect a <strong>Host PC</strong> directly into that <em>same</em> Switch!
+                    </div>
+                    <svg class="connections-layer" id="svg-layer"></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: CERTIFICATION EXAM -->
+        <div id="screen-quiz" class="screen">
+            <div class="quiz-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div class="badge" id="quiz-progress-badge">Question 1 of 5</div>
+                    <div id="quiz-score-display" style="font-size: 0.85rem; color: var(--accent-green);">Score: 0/5</div>
+                </div>
+                <div id="quiz-question" class="question-text">Loading question...</div>
+                <ul class="options-list" id="quiz-options"></ul>
+                <div id="quiz-breakdown" class="breakdown-box"></div>
+                <button id="quiz-next-btn" class="btn" style="display:none; margin-top: 12px;" onclick="nextQuestion()">Next Question ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchScreen(screenId, btnElement) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => { if(!b.getAttribute('href')) b.classList.remove('active'); });
+            document.getElementById('screen-' + screenId).classList.add('active');
+            if(btnElement && !btnElement.getAttribute('href')) btnElement.classList.add('active');
+            if(screenId === 'quiz') loadQuizQuestion();
+        }
+
+        // --- Simulator Logic ---
+        let currentLevel = "1.1";
+        let nodes = [];
+        let connections = [];
+        let isCableMode = false;
+        let cableSourceNode = null;
+        let draggedNodeType = null;
+
+        function drag(ev, type) { draggedNodeType = type; }
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drop(ev) {
+            ev.preventDefault();
+            const rect = document.getElementById('canvas').getBoundingClientRect();
+            nodes.push({ 
+                id: 'node_' + Date.now(), 
+                type: draggedNodeType, 
+                x: ev.clientX - rect.left - 45, 
+                y: ev.clientY - rect.top - 40 
+            });
+            renderNodes();
+        }
+
+        function renderNodes() {
+            const canvas = document.getElementById('canvas');
+            document.querySelectorAll('.node').forEach(n => n.remove());
+
+            nodes.forEach(n => {
+                const div = document.createElement('div');
+                div.className = 'node';
+                div.style.left = n.x + 'px';
+                div.style.top = n.y + 'px';
+                div.id = n.id;
+
+                let svgIcon = '';
+                if (n.type === 'PC') {
+                    svgIcon = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`;
+                } else if (n.type === 'Switch') {
+                    svgIcon = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="6" cy="12" r="1"/><circle cx="10" cy="12" r="1"/><circle cx="14" cy="12" r="1"/></svg>`;
+                } else if (n.type === 'Router') {
+                    svgIcon = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>`;
+                }
+
+                div.innerHTML = `${svgIcon}<span>${n.type}</span>`;
+                makeDraggable(div, n);
+                div.onclick = (e) => { e.stopPropagation(); handleNodeClick(n); };
+                canvas.appendChild(div);
+            });
+            renderConnections();
+        }
+
+        function makeDraggable(element, nodeObj) {
+            let p1=0, p2=0, p3=0, p4=0;
+            element.onmousedown = (e) => {
+                if (isCableMode) return;
+                e.preventDefault();
+                p3 = e.clientX; p4 = e.clientY;
+                document.onmouseup = closeDrag;
+                document.onmousemove = elementDrag;
+            };
+            function elementDrag(e) {
+                e.preventDefault();
+                p1 = p3 - e.clientX; p2 = p4 - e.clientY;
+                p3 = e.clientX; p4 = e.clientY;
+                nodeObj.x = element.offsetLeft - p1;
+                nodeObj.y = element.offsetTop - p2;
+                element.style.left = nodeObj.x + 'px';
+                element.style.top = nodeObj.y + 'px';
+                renderConnections();
+            }
+            function closeDrag() { document.onmouseup = null; document.onmousemove = null; }
+        }
+
+        function toggleCableMode() {
+            isCableMode = !isCableMode;
+            cableSourceNode = null;
+            const btn = document.getElementById('btn-cable');
+            const txt = document.getElementById('cable-mode-text');
+            if (isCableMode) {
+                btn.style.background = '#4ade80'; btn.style.color = '#0f172a'; txt.innerText = "Select Source Device";
+            } else {
+                btn.style.background = '#1e3a8a'; btn.style.color = '#38bdf8'; txt.innerText = "Connect Cable";
+                clearSelection();
+            }
+        }
+
+        function handleNodeClick(n) {
+            if (!isCableMode) return;
+            const el = document.getElementById(n.id);
+            if (!cableSourceNode) {
+                cableSourceNode = n;
+                el.classList.add('selected');
+                document.getElementById('cable-mode-text').innerText = "Select Target Device";
+            } else {
+                if (cableSourceNode.id !== n.id) {
+                    connections.push({ from: cableSourceNode.id, to: n.id });
+                    renderConnections();
+                }
+                clearSelection();
+                isCableMode = false;
+                document.getElementById('btn-cable').style.background = '#1e3a8a';
+                document.getElementById('btn-cable').style.color = '#38bdf8';
+                document.getElementById('cable-mode-text').innerText = "Connect Cable";
+            }
+        }
+
+        function clearSelection() { document.querySelectorAll('.node').forEach(n => n.classList.remove('selected')); }
+
+        function renderConnections() {
+            const svg = document.getElementById('svg-layer');
+            svg.innerHTML = '';
+            connections.forEach(c => {
+                const e1 = document.getElementById(c.from);
+                const e2 = document.getElementById(c.to);
+                if (e1 && e2) {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', e1.offsetLeft + 45);
+                    line.setAttribute('y1', e1.offsetTop + 40);
+                    line.setAttribute('x2', e2.offsetLeft + 45);
+                    line.setAttribute('y2', e2.offsetTop + 40);
+                    line.setAttribute('stroke', '#38bdf8');
+                    line.setAttribute('stroke-width', '3');
+                    line.setAttribute('stroke-dasharray', '4');
+                    svg.appendChild(line);
+                }
+            });
+        }
+
+        function changeLevel(levelVal) {
+            currentLevel = levelVal;
+            clearCanvas();
+            const inst = document.getElementById('challenge-instructions');
+            const lBadge = document.getElementById('lesson-badge');
+            const lDesc = document.getElementById('lesson-desc');
+            const lGrid = document.getElementById('lesson-grid');
+
+            if (levelVal === "1.1") {
+                inst.innerHTML = "<strong>Strict Challenge (Level 1.1):</strong> Connect a <strong>Router</strong> directly to a <strong>Layer 2 Switch</strong>, AND connect a <strong>Host PC</strong> directly into that <em>same</em> Switch!";
+                lBadge.innerText = "CURRICULUM MODULE: LEVEL 1.1 - PHYSICAL LAYER & GATEWAYS";
+                lDesc.innerHTML = "Welcome beginner network engineer! Imagine a postal system: <strong>Hosts (PCs)</strong> write letters, <strong>Switches</strong> deliver mail within the same local building (LAN), and <strong>Routers</strong> are post offices sending mail across separate cities (WAN/Internet). At the Physical Layer (OSI Layer 1), data bits are converted into electrical pulses, light flashes, or radio waves.";
+                lGrid.innerHTML = `
+                    <div class="spec-box"><h3>1. Understanding Core Devices</h3><p>• <strong>Host PC:</strong> End-user node generating traffic.<br>• <strong>Layer 2 Switch:</strong> Connects devices on the same LAN using MAC addresses.<br>• <strong>Router:</strong> Gateway interconnecting separate IP subnets.</p></div>
+                    <div class="spec-box"><h3>2. Performance Metrics</h3><p>• <strong>Bandwidth:</strong> Theoretical maximum capacity.<br>• <strong>Throughput:</strong> Real-time measured speed.<br>• <strong>Goodput:</strong> Usable application throughput minus headers.</p></div>
+                    <div class="spec-box"><h3>3. Copper Media & Crosstalk</h3><p>• <strong>UTP Cables:</strong> Unshielded twisted pairs.<br>• <strong>Twisting:</strong> Cancels electromagnetic interference (EMI).</p></div>
+                    <div class="spec-box"><h3>4. Fiber-Optic Technologies</h3><p>• <strong>SMF:</strong> Lasers, long distance (100km).<br>• <strong>MMF:</strong> LEDs, datacenters (550m).</p></div>
+                `;
+            } else if (levelVal === "1.2") {
+                inst.innerHTML = "<strong>Strict Challenge (Level 1.2):</strong> Build an extended local network! Connect <strong>Switch A</strong> directly to <strong>Switch B</strong>. Then, connect <strong>PC 1</strong> to Switch A, and <strong>PC 2</strong> to Switch B!";
+                lBadge.innerText = "CURRICULUM MODULE: LEVEL 1.2 - ETHERNET PINOUTS & SWITCH INTERCONNECTS";
+                lDesc.innerHTML = "In <strong>Level 1.2</strong>, you learn how switches connect across an enterprise. When connecting two similar devices (like Switch to Switch), traditional networks required a <strong>Crossover Cable</strong>. Modern Cisco gear uses <strong>Auto-MDIX</strong> to auto-detect and configure pinouts seamlessly.";
+                lGrid.innerHTML = `
+                    <div class="spec-box"><h3>1. Straight-Through Cables</h3><p>• Used to connect dissimilar devices (PC to Switch, or Router to Switch).<br>• Pins 1, 2, 3, and 6 match identically on both ends of the T568B RJ45 connector.</p></div>
+                    <div class="spec-box"><h3>2. Crossover Cables</h3><p>• Used to connect similar devices directly together (Switch-to-Switch or PC-to-PC).<br>• Transmit (+/-) on one end connects directly to Receive (+/-) on the other end.</p></div>
+                    <div class="spec-box"><h3>3. Auto-MDIX Technology</h3><p>• Modern Cisco switches automatically detect cable pinout types.<br>• Eliminates network link failure if the wrong physical cable type is chosen.</p></div>
+                    <div class="spec-box"><h3>4. Collision Domains</h3><p>• Switches break collision domains, allowing full-duplex simultaneous data transmission.</p></div>
+                `;
+            } else if (levelVal === "1.3") {
+                inst.innerHTML = "<strong>Strict Challenge (Level 1.3):</strong> Build a datacenter backbone! Connect a <strong>Router</strong> directly to a <strong>Switch</strong> (optical uplink), and attach at least <strong>two Host PCs</strong> to that Switch.";
+                lBadge.innerText = "CURRICULUM MODULE: LEVEL 1.3 - FIBER OPTIC MEDIA & TRANSCEIVERS";
+                lDesc.innerHTML = "In <strong>Level 1.3</strong>, you enter enterprise datacenter environments. Copper cables suffer from distance limitations (100 meters max) and electrical noise. <strong>Fiber-optic cables</strong> transmit data as pulses of light using glass cores, immune to electromagnetic interference (EMI) and capable of transmitting across continents.";
+                lGrid.innerHTML = `
+                    <div class="spec-box"><h3>1. Single-Mode Fiber (SMF)</h3><p>• Core size: 9 microns. Light Source: Lasers. Distance: Up to 100 km (ISP backbones).</p></div>
+                    <div class="spec-box"><h3>2. Multimode Fiber (MMF)</h3><p>• Core size: 50/62.5 microns. Light Source: LEDs. Distance: Up to 550m (Datacenters).</p></div>
+                    <div class="spec-box"><h3>3. SFP Transceiver Modules</h3><p>• Pluggable transceiver modules converting electrical signals into optical laser pulses.</p></div>
+                    <div class="spec-box"><h3>4. Fiber Connector Types</h3><p>• <strong>LC Connectors:</strong> Small snap-in duplex connectors widely used in modern switches.</p></div>
+                `;
+            }
+        }
+
+        // --- ACCURATE TOPOLOGY GRAPH VALIDATION ENGINE ---
+        function validateChallenge() {
+            if (connections.length === 0) {
+                alert("❌ No connections found! Please wire devices together first.");
+                return;
+            }
+
+            // Build an adjacency list representation of the network graph
+            const adj = {};
+            nodes.forEach(n => adj[n.id] = { type: n.type, neighbors: [] });
+
+            connections.forEach(c => {
+                if (adj[c.from] && adj[c.to]) {
+                    adj[c.from].neighbors.push(adj[c.to].type);
+                    adj[c.to].neighbors.push(adj[c.from].type);
+                }
+            });
+
+            if (currentLevel === "1.1") {
+                // Rule 1.1: At least 1 router, 1 switch, 1 PC. Switch must be connected to Router AND at least 1 PC.
+                let validFound = false;
+                Object.values(adj).forEach(node => {
+                    if (node.type === 'Switch') {
+                        const hasRouterNeighbor = node.neighbors.includes('Router');
+                        const hasPCNeighbor = node.neighbors.includes('PC');
+                        if (hasRouterNeighbor && hasPCNeighbor) {
+                            validFound = true;
+                        }
+                    }
+                });
+
+                if (validFound) {
+                    alert("🎉 Success! Level 1.1 Complete: The Switch is correctly acting as a local gateway bridging the Router and PC.");
+                } else {
+                    alert("❌ Incorrect Topology for Level 1.1: In a real network, the Switch must have a direct link to the Router AND a direct link to a Host PC to form a functioning subnet.");
+                }
+
+            } else if (currentLevel === "1.2") {
+                // Rule 1.2: Exactly/At least 2 switches connected to each other, with PC connected to Switch A and PC connected to Switch B.
+                let validEnterpriseTopology = false;
+
+                Object.values(adj).forEach(node => {
+                    if (node.type === 'Switch') {
+                        // Check if this switch connects to another switch AND at least one PC
+                        const connectedToAnotherSwitch = node.neighbors.includes('Switch');
+                        const connectedToPC = node.neighbors.includes('PC');
+                        if (connectedToAnotherSwitch && connectedToPC) {
+                            validEnterpriseTopology = true;
+                        }
+                    }
+                });
+
+                let switchCount = nodes.filter(n => n.type === 'Switch').length;
+                let pcCount = nodes.filter(n => n.type === 'PC').length;
+
+                if (switchCount >= 2 && pcCount >= 2 && validEnterpriseTopology) {
+                    alert("🎉 Outstanding! Level 1.2 Complete: Multi-switch enterprise topology verified correctly with cross-switch and endpoint links.");
+                } else {
+                    alert("❌ Incorrect Topology for Level 1.2: Ensure Switch A is connected directly to Switch B, and that both switches have host PCs attached to them.");
+                }
+
+            } else if (currentLevel === "1.3") {
+                // Rule 1.3: Router connected to Switch (Backbone), Switch connected to at least 2 PCs.
+                let validBackbone = false;
+
+                Object.values(adj).forEach(node => {
+                    if (node.type === 'Switch') {
+                        const connectedToRouter = node.neighbors.includes('Router');
+                        const pcCountOnSwitch = node.neighbors.filter(t => t === 'PC').length;
+                        if (connectedToRouter && pcCountOnSwitch >= 2) {
+                            validBackbone = true;
+                        }
+                    }
+                });
+
+                if (validBackbone) {
+                    alert("🎉 Masterclass! Level 1.3 Complete: High-speed datacenter backbone and endpoint access layer successfully verified!");
+                } else {
+                    alert("❌ Incorrect Topology for Level 1.3: Ensure your Router is linked directly into the Switch (acting as the optical backbone), and at least two PCs are attached to that Switch.");
+                }
+            }
+        }
+
+        function clearCanvas() { nodes = []; connections = []; renderNodes(); }
+
+        // --- Exam Quiz Logic ---
+        const quizPool = [
+            {
+                q: "Which metric measures the actual transfer rate of usable application data sent across a network after stripping all protocol header bytes?",
+                options: ["Bandwidth", "Throughput", "Goodput", "Baud Rate"],
+                answer: 2,
+                breakdown: [
+                    "<strong>Bandwidth:</strong> Theoretical maximum capacity of the communications link.",
+                    "<strong>Throughput:</strong> Actual measured rate of data transfer, including packet overhead headers.",
+                    "<strong>Goodput:</strong> <span style='color:var(--accent-green)'>Correct!</span> Net application data transferred without protocol headers.",
+                    "<strong>Baud Rate:</strong> Measure of symbol change frequency per second on a signaling medium."
+                ]
+            },
+            {
+                q: "What physical cable characteristic is actively mitigated by twisting pairs of copper wires inside a UTP cable?",
+                options: ["Signal Attenuation", "Crosstalk", "Optical Dispersion", "Refraction"],
+                answer: 1,
+                breakdown: [
+                    "<strong>Signal Attenuation:</strong> The natural weakening of signal strength over long distances.",
+                    "<strong>Crosstalk:</strong> <span style='color:var(--accent-green)'>Correct!</span> Electromagnetic interference from adjacent wire pairs, cancelled out by twisting.",
+                    "<strong>Optical Dispersion:</strong> Light pulse spreading inside fiber-optic cores over distance.",
+                    "<strong>Refraction:</strong> Bending of light rays when passing through optical media."
+                ]
+            },
+            {
+                q: "Which fiber-optic media type uses narrow glass cores and laser light sources to transmit signals over massive geographic distances (up to 100km)?",
+                options: ["Multimode Fiber (MMF)", "Single-Mode Fiber (SMF)", "Shielded Twisted Pair", "Coaxial Broadband"],
+                answer: 1,
+                breakdown: [
+                    "<strong>Multimode Fiber (MMF):</strong> Uses LED sources and wider cores for short-range datacenters (up to 550m).",
+                    "<strong>Single-Mode Fiber (SMF):</strong> <span style='color:var(--accent-green)'>Correct!</span> Uses precision lasers and tiny cores for long-haul transmission.",
+                    "<strong>Shielded Twisted Pair (STP):</strong> Copper cable wrapped in metallic foil shielding.",
+                    "<strong>Coaxial Broadband:</strong> Copper cable standard historically used for cable television networks."
+                ]
+            },
+            {
+                q: "Which networking hardware device operates primarily at Layer 2 (Data Link Layer) to forward frames using MAC address tables?",
+                options: ["Hub", "Router", "Layer 2 Switch", "Repeater"],
+                answer: 2,
+                breakdown: [
+                    "<strong>Hub:</strong> Layer 1 physical device that blindly broadcasts electrical signals out all ports.",
+                    "<strong>Router:</strong> Layer 3 network device that routes packets between different IP subnets.",
+                    "<strong>Layer 2 Switch:</strong> <span style='color:var(--accent-green)'>Correct!</span> Examines destination MAC addresses to intelligently forward frames.",
+                    "<strong>Repeater:</strong> Layer 1 physical device that regenerates weakened electrical signals."
+                ]
+            },
+            {
+                q: "What type of copper cable pinout is typically required to connect two similar devices directly together, such as a switch-to-switch link without an auto-MDIX feature?",
+                options: ["Straight-Through Cable", "Crossover Cable", "Rollover Cable", "Console Serial Cable"],
+                answer: 1,
+                breakdown: [
+                    "<strong>Straight-Through:</strong> Used for dissimilar devices (PC to Switch or Router to Switch).",
+                    "<strong>Crossover Cable:</strong> <span style='color:var(--accent-green)'>Correct!</span> Crosses transmit and receive pins to connect similar devices directly.",
+                    "<strong>Rollover Cable:</strong> Proprietary cable used for router or switch console management ports.",
+                    "<strong>Console Serial Cable:</strong> Legacy terminal connection cable for device configuration."
+                ]
+            }
+        ];
+
+        let currentQuiz = 0;
+        let score = 0;
+
+        function loadQuizQuestion() {
+            if (currentQuiz >= quizPool.length) {
+                document.getElementById('quiz-question').innerText = `Exam Complete! Final Score: ${score} / ${quizPool.length}`;
+                document.getElementById('quiz-options').innerHTML = '';
+                document.getElementById('quiz-breakdown').style.display = 'none';
+                document.getElementById('quiz-next-btn').style.display = 'none';
+                return;
+            }
+
+            const q = quizPool[currentQuiz];
+            document.getElementById('quiz-progress-badge').innerText = `Question ${currentQuiz + 1} of ${quizPool.length}`;
+            document.getElementById('quiz-score-display').innerText = `Score: ${score}/${quizPool.length}`;
+            document.getElementById('quiz-question').innerText = q.q;
+            document.getElementById('quiz-breakdown').style.display = 'none';
+            document.getElementById('quiz-next-btn').style.display = 'none';
+
+            const list = document.getElementById('quiz-options');
+            list.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const li = document.createElement('li');
+                li.className = 'option-item';
+                li.innerText = opt;
+                li.onclick = () => checkAnswer(idx, li);
+                list.appendChild(li);
+            });
+        }
+
+        function checkAnswer(selected, el) {
+            const q = quizPool[currentQuiz];
+            const items = document.querySelectorAll('.option-item');
+            items.forEach(i => i.onclick = null);
+
+            if (selected === q.answer) {
+                el.classList.add('correct');
+                score++;
+            } else {
+                el.classList.add('wrong');
+                items[q.answer].classList.add('correct');
+            }
+
+            document.getElementById('quiz-score-display').innerText = `Score: ${score}/${quizPool.length}`;
+
+            const breakdownBox = document.getElementById('quiz-breakdown');
+            let breakdownHTML = "<strong>Option Breakdowns & Definitions:</strong><br><br>";
+            q.breakdown.forEach(b => {
+                breakdownHTML += `<div class="breakdown-item">• ${b}</div>`;
+            });
+            breakdownBox.innerHTML = breakdownHTML;
+            breakdownBox.style.display = 'block';
+            document.getElementById('quiz-next-btn').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuiz++;
+            loadQuizQuestion();
+        }
+    </script>
+</body>
+</html>

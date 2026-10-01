@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCNA Arcade - Level 1.1: The Cable Closet (NetAcad Deep-Dive)</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-dark: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-red: #f87171;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 { color: var(--accent-blue); font-size: 2rem; margin-bottom: 5px; letter-spacing: 1px; }
+        h2 { color: var(--text-muted); font-size: 1.1rem; font-weight: 400; }
+
+        .container {
+            width: 100%;
+            max-width: 950px;
+            background-color: var(--panel-dark);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 1px solid #334155;
+            position: relative;
+            min-height: 550px;
+        }
+
+        .screen { display: none; }
+        .screen.active { display: flex; flex-direction: column; }
+
+        .lesson-text { line-height: 1.6; margin-bottom: 20px; color: #cbd5e1; }
+        
+        .spec-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .spec-box {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #334155;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .spec-box h3 { color: var(--accent-blue); font-size: 1rem; margin-bottom: 8px; text-transform: uppercase;}
+        .spec-box p { font-size: 0.88rem; line-height: 1.5; color: var(--text-muted); }
+        .spec-box strong { color: var(--text-light); }
+
+        .btn {
+            background-color: var(--accent-blue);
+            color: var(--bg-dark);
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            align-self: center;
+            margin-top: 10px;
+        }
+        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+
+        .game-hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: bold; font-size: 1.1rem; }
+        
+        .simulator-layout { display: flex; gap: 20px; margin-bottom: 15px; }
+        
+        .canvas-area {
+            flex: 1.2;
+            height: 300px;
+            background: #020617;
+            border-radius: 8px;
+            border: 1px dashed #475569;
+            position: relative;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .device-node { display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 2; }
+        .device-label { font-family: monospace; font-size: 0.85rem; color: var(--accent-blue); background: rgba(15, 23, 42, 0.8); padding: 2px 8px; border-radius: 4px; border: 1px solid #334155; }
+
+        .cable-svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .network-cable { stroke-dasharray: 8; animation: dataFlow 1s linear infinite; transition: stroke 0.3s, stroke-width 0.3s; }
+        @keyframes dataFlow { to { stroke-dashoffset: -16; } }
+
+        .sidebar-controls { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+        .game-scenario { font-size: 0.95rem; color: #f1f5f9; padding: 12px; background: #0f172a; border-radius: 6px; border-left: 3px solid var(--accent-blue); min-height: 80px; line-height: 1.4; }
+        
+        .media-card {
+            background: #020617;
+            border: 2px solid #475569;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .media-card:hover { border-color: var(--accent-blue); background: #0f172a; }
+        .media-card h4 { color: var(--accent-blue); font-size: 0.95rem; margin-bottom: 2px; }
+        .media-card p { font-size: 0.8rem; color: var(--text-muted); }
+
+        .question-text { font-size: 1.2rem; margin-bottom: 20px; font-weight: 500; line-height: 1.5; }
+        .options-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+        
+        .option-item {
+            background: #334155;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #475569;
+            transition: background 0.2s;
+        }
+        .option-item:hover { background: #475569; }
+        .option-item.correct { background-color: rgba(74, 222, 128, 0.2); border-color: var(--accent-green); }
+        .option-item.wrong { background-color: rgba(248, 113, 113, 0.2); border-color: var(--accent-red); }
+        .explanation { background: #020617; padding: 15px; border-radius: 6px; margin-top: 20px; display: none; line-height: 1.5; font-size: 0.95rem; }
+
+        .dash-card { text-align: center; padding: 20px 0; }
+        .score-display { font-size: 3rem; color: var(--accent-green); font-weight: bold; margin: 15px 0; }
+        .save-indicator { font-size: 0.9rem; color: var(--accent-blue); font-style: italic; margin-top: 15px; }
+
+        footer { margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); text-align: center; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CCNA ARCADE</h1>
+        <h2>Stage 1 • Level 1.1: The Cable Closet (Cisco NetAcad ITN Deep-Dive)</h2>
+    </header>
+
+    <div class="container">
+        <!-- STEP 1: LESSON SCREEN -->
+        <div id="screen-lesson" class="screen active">
+            <p class="lesson-text">
+                Welcome to <strong>OSI Layer 1: The Physical Layer</strong>. To pass the CCNA exam, you must understand how data frames are converted into bits and sent across media formats managed by standards bodies like <strong>ISO, IEEE, and TIA/EIA</strong>.
+            </p>
+            
+            <div class="spec-grid">
+                <div class="spec-box">
+                    <h3>1. The 3 Functional Pillars</h3>
+                    <p>
+                        • <strong>Physical Components:</strong> Electronic hardware devices, media, and connectors (NICs, ports, patch frames).<br>
+                        • <strong>Encoding:</strong> Converting data stream bits into recognizable code patterns (e.g., Manchester encoding).<br>
+                        • <strong>Signaling:</strong> The physical method used to represent a 1 or 0 on the wire (voltage variations, light flashes, or microwave radio pulses).
+                    </p>
+                </div>
+                <div class="spec-box">
+                    <h3>2. Bandwidth vs. Throughput</h3>
+                    <p>
+                        • <strong>Bandwidth:</strong> Theoretical maximum capacity of a physical medium under ideal parameters (measured in bps, Mbps, Gbps).<br>
+                        • <strong>Throughput:</strong> Actual speed of bits transferred over a specific window of time (reduced by latency and overhead).<br>
+                        • <strong>Goodput:</strong> The measurement of actual <em>usable application layer data</em> sent after stripping away all header protocol bytes.
+                    </p>
+                </div>
+                <div class="spec-box">
+                    <h3>3. Copper Media Degradation</h3>
+                    <p>
+                        • <strong>Attenuation:</strong> Signals weaken as they travel over long physical distances.<br>
+                        • <strong>EMI / RFI:</strong> Outward noise signals that distort copper pathways (caused by fluorescent lights or motors).<br>
+                        • <strong>Crosstalk:</strong> Disturbance caused by magnetic field bleeding from one adjacent wire pair onto another wire pair.
+                    </p>
+                </div>
+                <div class="spec-box">
+                    <h3>4. Fiber Media Types</h3>
+                    <p>
+                        • <strong>Single-Mode (SMF):</strong> Small core, uses expensive lasers to send a single stream of light. Spans massive distances (up to 100km).<br>
+                        • <strong>Multimode (MMF):</strong> Wider core, uses cheap LEDs to bounce multiple light reflections. Used for localized data centers (up to 550m).
+                    </p>
+                </div>
+            </div>
+
+            <button class="btn" onclick="startGameplay()">Initialize Cisco Simulation Environment</button>
+        </div>
+
+        <!-- STEP 2: GAMEPLAY SIMULATOR SCREEN -->
+        <div id="screen-game" class="screen">
+            <div class="game-hud">
+                <button class="btn" style="padding: 6px 12px; font-size: 0.85rem; margin: 0; background-color: #475569; color: var(--text-light);" onclick="resetToLesson()">◀ Return to Lesson</button>
+                <div>Infrastructure Map: <span id="hud-score">0</span>/4 Connected</div>
+                <div style="color: var(--accent-blue);">Topology Canvas</div>
+            </div>
+            
+            <div class="simulator-layout">
+                <div class="canvas-area">
+                    <svg class="cable-svg-layer">
+                        <line id="topo-cable" x1="120" y1="120" x2="380" y2="120" stroke="#334155" stroke-width="4" class="network-cable"/>
+                    </svg>
+
+                    <div class="device-node">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                            <rect x="12" y="10" width="40" height="28" rx="3" fill="#475569" stroke="#cbd5e1" stroke-width="2"/>
+                            <rect x="16" y="14" width="32" height="20" fill="#020617"/>
+                            <path d="M26 38L20 50H44L38 38H26Z" fill="#64748b" stroke="#cbd5e1" stroke-width="2"/>
+                        </svg>
+                        <div class="device-label" id="lbl-src">Source</div>
+                    </div>
+
+                    <div class="device-node">
+                        <svg width="74" height="54" viewBox="0 0 74 54" fill="none">
+                            <rect x="4" y="10" width="66" height="34" rx="4" fill="#1e3a8a" stroke="#38bdf8" stroke-width="2"/>
+                            <circle cx="16" cy="27" r="4" fill="#4ade80"/><circle cx="28" cy="27" r="4" fill="#4ade80"/>
+                            <rect x="52" y="20" width="6" height="6" fill="#0f172a" stroke="#64748b"/>
+                        </svg>
+                        <div class="device-label" id="lbl-dst">Destination</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-controls">
+                    <div id="scenario-text" class="game-scenario">Evaluating physical topology requirements...</div>
+                    <div class="media-options">
+                        <div class="media-card" onclick="handleDecision('copper')">
+                            <h4>Copper (UTP Category 6)</h4>
+                            <p>Utilizes electrical signaling. Standard internal localized infrastructure up to 100m.</p>
+                        </div>
+                        <div class="media-card" onclick="handleDecision('smf')">
+                            <h4>Single-Mode Fiber (SMF)</h4>
+                            <p>Utilizes single-line laser signaling. Spans maximum long-haul distances up to 100km.</p>
+                        </div>
+                        <div class="media-card" onclick="handleDecision('mmf')">
+                            <h4>Multimode Fiber (MMF)</h4>
+                            <p>Utilizes LED light reflections. High bandwidth paths for localized datacenter backbones up to 550m.</p>
+                        </div>
+                        <div class="media-card" onclick="handleDecision('wireless')">
+                            <h4>Wireless Radio (RF)</h4>
+                            <p>Utilizes electromagnetic frequency modulation for flexible end-device cell areas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: EXAM SCREEN -->
+        <div id="screen-quiz" class="screen">
+            <div class="quiz-container">
+                <div class="game-hud">
+                    <button class="btn" style="padding: 6px 12px; font-size: 0.85rem; margin: 0; background-color: #475569; color: var(--text-light);" onclick="resetToLesson()">◀ Abort Exam to Review</button>
+                    <div style="color: var(--accent-blue);">OFFICIAL CISCO NETACAD CRITERIA CERTIFICATION</div>
+                </div>
+                <div id="quiz-question" class="question-text">Verifying application-layer parameters...</div>
+                <ul class="options-list" id="quiz-options"></ul>
+                <div id="quiz-explanation" class="explanation"></div>
+                <button id="quiz-next-btn" class="btn" style="display:none;" onclick="handleQuizNext()">Submit Next Question</button>
+            </div>
+        </div>
+
+        <!-- STEP 4: DASHBOARD OUTCOME -->
+        <div id="screen-dash" class="screen">
+            <div class="dash-card">
+                <h3 style="font-size: 1.8rem; color: var(--accent-green);">Level Complete! Layer 1 Foundations Mastered</h3>
+                <p style="margin-top: 10px; color: var(--text-muted);">You successfully achieved 100% compliance across Cisco ITN Module 4 standards.</p>
+                <div class="score-display">100% CERTIFIED</div>
+                <div class="save-indicator">💾 Auto-Save Synchronized: localStorage.ccna_level_1_1 = "NetAcad_L1_Mastered"</div>
+                <button class="btn" style="margin-top:25px;" onclick="resetToLesson()">Re-run Module</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 CCNA Arcade Project Plan. Fully Aligned with Cisco Objectives. All Rights Reserved.
+    </footer>
+    <script>
+        const scenarios = [
+            { text: "Deploy a budget-friendly physical cable to link a desktop machine to an office wall outlet jack spanning 15 meters.", target: "copper", srcLabel: "Host_PC", dstLabel: "Wall_Jack", lineStroke: "#ef4444" },
+            { text: "Connect two regional city hubs separated across a distance of 45 kilometers using an underground metropolitan infrastructure deployment.", target: "smf", srcLabel: "City_A_Router", dstLabel: "City_B_Router", lineStroke: "#38bdf8" },
+            { text: "Run a high-bandwidth patch distribution line between core multi-layer switch fabrics inside a single server room stack spanning 200 meters.", target: "mmf", srcLabel: "Core_Switch_1", dstLabel: "Core_Switch_2", lineStroke: "#a855f7" },
+            { text: "Establish an access connectivity environment across an open office floor allowing corporate users to transport mobile handheld assets seamlessly.", target: "wireless", srcLabel: "Mobile_PDA", dstLabel: "Access_Point", lineStroke: "#eab308" }
+        ];
+
+        const quizPool = [
+            {
+                q: "A network engineering team notices that despite high transmission speeds, a large volume of data consists of transport encapsulation headers, resulting in low actual file-transfer rates. Which metric measures this actual volume of usable application data received?",
+                options: ["Bandwidth", "Throughput", "Goodput", "Baud Rate"],
+                answer: 2,
+                exp: "<h3>📚 TERM BREAKDOWN ANALYSIS:</h3>" +
+                     "• <strong>Goodput (CORRECT):</strong> Measures the actual transfer rate of usable application data after stripping away all protocol header bits, frame checks, and retransmissions.<br><br>" +
+                     "• <strong>Bandwidth:</strong> The theoretical maximum capacity of a physical medium under ideal conditions (e.g., Cat6 can hit 10 Gbps theoretically).<br><br>" +
+                     "• <strong>Throughput:</strong> The actual speed of bits transferred over the wire in a specific window of time, which includes overhead like headers and packet management bits.<br><br>" +
+                     "• <strong>Baud Rate:</strong> The total number of signal transitions or electrical state changes per second, which does not directly equal bits per second."
+            },
+            {
+                q: "When a structural installer twists individual copper wire conductors inside an unshielded twisted-pair (UTP) cable, what physical constraint or degradation effect are they actively mitigating?",
+                options: ["Signal Attenuation", "Crosstalk", "Dispersion", "Refraction limitations"],
+                answer: 1,
+                exp: "<h3>📚 TERM BREAKDOWN ANALYSIS:</h3>" +
+                     "• <strong>Crosstalk (CORRECT):</strong> Disturbance caused by magnetic field bleeding from one adjacent wire pair onto another. Twisting them creates a physical cancellation effect that nullifies this noise.<br><br>" +
+                     "• <strong>Signal Attenuation:</strong> The natural weakening of an electrical signal as it travels down a cable over long distances (mitigated by repeaters or sticking to the 100m limit).<br><br>" +
+                     "• <strong>Dispersion:</strong> The spreading out of light pulses over time, which is a degradation effect unique to fiber-optic cables, not copper.<br><br>" +
+                     "• <strong>Refraction:</strong> The bending of light waves as they pass through different glass boundaries, which applies strictly to fiber optics."
+            },
+            {
+                q: "Which specific functional area of the OSI physical layer is responsible for converting a stream of raw binary data bits into a pre-defined pattern recognized by the receiving device hardware interface?",
+                options: ["Signaling Method", "Encoding Process", "Physical Components", "Media Access Control"],
+                answer: 1,
+                exp: "<h3>📚 TERM BREAKDOWN ANALYSIS:</h3>" +
+                     "• <strong>Encoding Process (CORRECT):</strong> The phase that converts strings of bits (1s and 0s) into a standardized, predictable pattern of code (like Manchester or 4B/5B encoding) so devices can sync.<br><br>" +
+                     "• <strong>Signaling Method:</strong> The actual electrical voltage, light flash, or radio pulse used to physically broadcast those encoded patterns down the wire.<br><br>" +
+                     "• <strong>Physical Components:</strong> The literal hardware machinery, connectors, cards, and cables (like NICs, plugs, and glass cores).<br><br>" +
+                     "• <strong>Media Access Control (MAC):</strong> A sublayer belonging to Layer 2 (Data Link Layer), which handles framing and mapping local hardware targets."
+            },
+            {
+                q: "What type of fiber-optic cabling uses cheap light-emitting diode (LED) sources to bounce multiple paths of light down a wider core path, and is typically used to connect localized data center backbones?",
+                options: ["Single-Mode Fiber (SMF)", "Multimode Fiber (MMF)", "Shielded Coaxial", "Category 6 UTP"],
+                answer: 1,
+                exp: "<h3>📚 TERM BREAKDOWN ANALYSIS:</h3>" +
+                     "• <strong>Multimode Fiber / MMF (CORRECT):</strong> Features a wider glass core that allows multiple angles of light (modes) emitted from cheaper LED light sources to bounce inside. Perfect for local backbones up to 550m.<br><br>" +
+                     "• <strong>Single-Mode Fiber / SMF:</strong> Features an extremely narrow glass core that uses focused lasers to send one straight beam of light across massive geographical distances (up to 100km).<br><br>" +
+                     "• <strong>Shielded Coaxial:</strong> A legacy copper cable layout with a central metal conductor wrapped in shielding, commonly used for cable television/broadband lines, not high-speed fiber backbones.<br><br>" +
+                     "• <strong>Category 6 UTP:</strong> An unshielded copper twisted-pair cable layout that uses electrical currents, completely separate from glass core structures."
+            }
+        ];
+        let currentScore = 0;
+        let currentQuizIndex = 0;
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGameplay() {
+            currentScore = 0;
+            document.getElementById('hud-score').innerText = currentScore;
+            
+            const cable = document.getElementById('topo-cable');
+            cable.setAttribute('stroke', '#334155');
+            cable.style.animationPlayState = "paused";
+            
+            showScreen('screen-game');
+            updateScenario();
+        }
+
+        function updateScenario() {
+            if (currentScore >= scenarios.length) {
+                startQuizPhase();
+                return;
+            }
+            const currentItem = scenarios[currentScore];
+            document.getElementById('scenario-text').innerText = currentItem.text;
+            document.getElementById('lbl-src').innerText = currentItem.srcLabel;
+            document.getElementById('lbl-dst').innerText = currentItem.dstLabel;
+        }
+
+        function handleDecision(playerChoice) {
+            const currentItem = scenarios[currentScore];
+            const correctAnswer = currentItem.target;
+            const cable = document.getElementById('topo-cable');
+            
+            if (playerChoice === correctAnswer) {
+                cable.setAttribute('stroke', currentItem.lineStroke);
+                cable.style.animationPlayState = "running";
+                
+                currentScore++;
+                document.getElementById('hud-score').innerText = currentScore;
+                
+                setTimeout(() => {
+                    cable.style.animationPlayState = "paused";
+                    updateScenario();
+                }, 900);
+            } else {
+                alert(`Improper Selection! That configuration breaks Cisco NetAcad implementation rules or environmental distance constraints.`);
+            }
+        }
+
+        function startQuizPhase() {
+            currentQuizIndex = 0;
+            showScreen('screen-quiz');
+            loadQuizQuestion();
+        }
+
+        function loadQuizQuestion() {
+            const currentQ = quizPool[currentQuizIndex];
+            document.getElementById('quiz-question').innerText = currentQ.q;
+            document.getElementById('quiz-explanation').style.display = "none";
+            document.getElementById('quiz-next-btn').style.display = "none";
+            
+            const optionsUl = document.getElementById('quiz-options');
+            optionsUl.innerHTML = "";
+            
+            currentQ.options.forEach((opt, idx) => {
+                const li = document.createElement('li');
+                li.className = "option-item";
+                li.innerText = opt;
+                li.onclick = () => evaluationSelection(idx, li);
+                optionsUl.appendChild(li);
+            });
+        }
+
+        function evaluationSelection(chosenIdx, element) {
+            const currentQ = quizPool[currentQuizIndex];
+            const items = document.querySelectorAll('.option-item');
+            
+            items.forEach(item => item.onclick = null);
+            
+            if (chosenIdx === currentQ.answer) {
+                element.classList.add('correct');
+            } else {
+                element.classList.add('wrong');
+                items[currentQ.answer].classList.add('correct');
+            }
+            
+            const expBox = document.getElementById('quiz-explanation');
+            expBox.innerHTML = currentQ.exp;
+            expBox.style.display = "block";
+            document.getElementById('quiz-next-btn').style.display = "block";
+        }
+
+        function handleQuizNext() {
+            currentQuizIndex++;
+            if (currentQuizIndex < quizPool.length) {
+                loadQuizQuestion();
+            } else {
+                triggerAutosaveAndComplete();
+            }
+        }
+
+        function triggerAutosaveAndComplete() {
+            try {
+                localStorage.setItem('ccna_level_1_1', 'NetAcad_L1_Mastered');
+            } catch(e) {
+                console.log("Local storage fallback executed.");
+            }
+            showScreen('screen-dash');
+        }
+
+        function resetToLesson() {
+            showScreen('screen-lesson');
+        }
+    </script>
+</body>
+</html>

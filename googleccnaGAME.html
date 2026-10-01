@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCNA Zero-to-Hero: Chapter 1 Beginner Academy</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { color: #1a1a1a; margin-bottom: 5px; text-align: center; }
+        .subtitle { color: #666; margin-bottom: 20px; font-size: 1.1em; text-align: center; }
+        
+        .container {
+            width: 850px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+        }
+
+        /* Tab Navigation */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        .tab-btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background-color: #e2e8f0;
+            color: #475569;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Field Guide Grid */
+        .glossary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .card {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .card h3 { margin-top: 0; color: #1e293b; }
+        .card p { font-size: 0.95em; color: #334155; line-height: 1.4; }
+
+        /* Game Section */
+        .scene {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 220px;
+            background: #eef2f7;
+            border-radius: 8px;
+            border: 2px dashed #cbd5e1;
+            position: relative;
+        }
+        .device {
+            background: #334155;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            position: relative;
+        }
+        .device span {
+            display: block;
+            font-size: 0.8em;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        .link-light {
+            width: 12px;
+            height: 12px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            transition: background-color 0.3s;
+        }
+        .link-light.active {
+            background-color: #22c55e;
+            box-shadow: 0 0 10px #22c55e;
+        }
+        .narrator-box {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #3b82f6;
+        }
+        .stick-figure { font-size: 2.5em; margin-right: 15px; }
+        .dialogue { font-size: 1.05em; color: #334155; font-weight: 500; line-height: 1.4; }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        button.action-btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background-color: #3b82f6;
+            color: white;
+        }
+        button.action-btn:hover { background-color: #2563eb; }
+        .status-badge {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>CCNA Zero-to-Hero Academy</h1>
+    <div class="subtitle">Chapter 1: Physical Layer & Network Hardware for Absolute Beginners</div>
+
+    <div class="container">
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'guideTab')">📖 1. Beginner Field Guide</button>
+            <button class="tab-btn" onclick="switchTab(event, 'gameTab')">🎮 2. Hands-on Challenge</button>
+        </div>
+
+        <!-- TAB 1: FIELD GUIDE -->
+        <div id="guideTab" class="tab-content active">
+            <h2>Know Your Hardware Before You Build</h2>
+            <p>If you've never touched physical networking gear, start here! These are the core building blocks you'll see in the CCNA exam and real data centers:</p>
+            
+            <div class="glossary-grid">
+                <div class="card">
+                    <h3>💻 PC / Host</h3>
+                    <p>Your desktop or laptop. It contains a <b>NIC (Network Interface Card)</b> with a physical port to plug in cables so it can talk to the network.</p>
+                </div>
+                <div class="card">
+                    <h3>🖲️ Switch (Layer 2)</h3>
+                    <p>The traffic cop inside a single office. It connects devices together in the same local network (LAN) and uses MAC addresses to forward data smartly.</p>
+                </div>
+                <div class="card">
+                    <h3>📡 Hub (The "Dumb" Switch)</h3>
+                    <p>An older, obsolete device. If data comes in one port, a hub blindly blasts it out to *every* other port. This causes massive data collisions!</p>
+                </div>
+                <div class="card">
+                    <h3>🌐 Router (Layer 3)</h3>
+                    <p>The post office of the network. It connects *different* networks together (like your home network to the Internet) using IP addresses.</p>
+                </div>
+                <div class="card">
+                    <h3>🔌 RJ-45 & Copper Cable</h3>
+                    <p>The standard clear plastic clip connector on the end of an Ethernet network cable (like Cat6) used to plug computers into switches.</p>
+                </div>
+                <div class="card">
+                    <h3>💡 Fiber Optic Cable</h3>
+                    <p>Uses pulses of light through glass strands instead of electricity. Used for ultra-fast, long-distance connections between buildings.</p>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="action-btn" onclick="switchTab(null, 'gameTab')">I'm ready, let's play the Challenge! &rarr;</button>
+            </div>
+        </div>
+
+        <!-- TAB 2: GAME CHALLENGE -->
+        <div id="gameTab" class="tab-content">
+            <div class="scene">
+                <div class="device">
+                    PC 1
+                    <span>NIC / RJ-45 Port</span>
+                </div>
+
+                <div id="cableStatus" style="font-weight: bold; color: #64748b; text-align: center;">
+                    [ No Cable Plugged In ]<br>
+                    <span id="cableTypeDisplay" style="font-size: 0.8em;">Check the Field Guide if stuck!</span>
+                </div>
+
+                <div class="device">
+                    Cisco Switch
+                    <span>FastEthernet Port</span>
+                    <div class="link-light" id="linkLight"></div>
+                </div>
+            </div>
+
+            <div class="narrator-box">
+                <div class="stick-figure">👨‍🏫</div>
+                <div class="dialogue" id="narratorText">
+                    <b>Challenge 1:</b> We need to hook up PC 1 to our Cisco Switch using physical copper media. Which cable has the standard <b>RJ-45</b> connector fit for this job?
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="action-btn" style="background-color: #64748b;" onclick="tryCable('fiber')">Fiber Optic Cable</button>
+                <button class="action-btn" onclick="tryCable('straight')">Cat6 Ethernet Cable (RJ-45)</button>
+                <button class="action-btn" style="background-color: #64748b;" onclick="tryCable('power')">Power Cord</button>
+            </div>
+
+            <div class="status-badge" id="statusBadge" style="color: #ef4444;">Status: Layer 1 Link Down ❌</div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(evt, tabName) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            if(evt) {
+                evt.currentTarget.classList.add('active');
+            } else {
+                buttons[1].classList.add('active'); // default second button
+            }
+        }
+
+        function tryCable(type) {
+            const linkLight = document.getElementById('linkLight');
+            const narratorText = document.getElementById('narratorText');
+            const statusBadge = document.getElementById('statusBadge');
+            const cableStatus = document.getElementById('cableStatus');
+            const cableTypeDisplay = document.getElementById('cableTypeDisplay');
+
+            if (type === 'straight') {
+                linkLight.classList.add('active');
+                cableStatus.style.color = '#22c55e';
+                cableStatus.innerHTML = '[ Connected Successfully! ]';
+                cableTypeDisplay.innerText = 'Cat6 RJ-45 Link Active.';
+                narratorText.innerHTML = '<b>Correct!</b> You plugged a standard Cat6 copper cable with an RJ-45 connector into the PC and Switch. The link light turned <b>GREEN</b> because electricity can flow and physical sync is achieved!';
+                statusBadge.style.color = '#22c55e';
+                statusBadge.innerText = 'Status: Layer 1 Link Up (1000 Mbps) ✔️ - Ready for Chapter 2!';
+            } else if (type === 'fiber') {
+                linkLight.classList.remove('active');
+                cableStatus.style.color = '#ef4444';
+                cableStatus.innerHTML = '[ Wrong Port Type ]';
+                cableTypeDisplay.innerText = 'Fiber Optic selected.';
+                narratorText.innerHTML = '<b>Not quite!</b> Fiber optic cables use light and require special SFP transceiver slots, not standard copper RJ-45 ports on a basic switch.';
+                statusBadge.style.color = '#ef4444';
+                statusBadge.innerText = 'Status: Layer 1 Link Down ❌';
+            } else {
+                linkLight.classList.remove('active');
+                cableStatus.style.color = '#ef4444';
+                cableStatus.innerHTML = '[ Epic Fail ]';
+                cableTypeDisplay.innerText = 'Power cord selected.';
+                narratorText.innerHTML = '<b>Oops!</b> That is a power cord, not a network cable! Power gives electricity to turn the device on, but it doesn\'t carry data frames between devices.';
+                statusBadge.style.color = '#ef4444';
+                statusBadge.innerText = 'Status: Layer 1 Link Down ❌';
+            }
+        }
+    </script>
+
+</body>
+</html>

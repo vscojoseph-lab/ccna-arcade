@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCNA Arcade - Level 1.2: Ethernet Pinouts</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-dark: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-red: #f87171;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 { color: var(--accent-blue); font-size: 2rem; margin-bottom: 5px; letter-spacing: 1px; }
+        h2 { color: var(--text-muted); font-size: 1.1rem; font-weight: 400; }
+
+        .container {
+            width: 100%;
+            max-width: 950px;
+            background-color: var(--panel-dark);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 1px solid #334155;
+            position: relative;
+            min-height: 550px;
+        }
+
+        .screen { display: none; }
+        .screen.active { display: flex; flex-direction: column; }
+
+        .lesson-text { line-height: 1.6; margin-bottom: 20px; color: #cbd5e1; }
+        
+        .spec-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .spec-box {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #334155;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .spec-box h3 { color: var(--accent-blue); font-size: 1rem; margin-bottom: 8px; text-transform: uppercase;}
+        .spec-box p { font-size: 0.88rem; line-height: 1.5; color: var(--text-muted); }
+        .spec-box strong { color: var(--text-light); }
+
+        .btn {
+            background-color: var(--accent-blue);
+            color: var(--bg-dark);
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            align-self: center;
+            margin-top: 10px;
+        }
+        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+
+        .game-hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: bold; font-size: 1.1rem; }
+        
+        .simulator-layout { display: flex; gap: 20px; margin-bottom: 15px; }
+        
+        .canvas-area {
+            flex: 1.2;
+            height: 300px;
+            background: #020617;
+            border-radius: 8px;
+            border: 1px dashed #475569;
+            position: relative;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .device-node { display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 2; }
+        .device-label { font-family: monospace; font-size: 0.85rem; color: var(--accent-blue); background: rgba(15, 23, 42, 0.8); padding: 2px 8px; border-radius: 4px; border: 1px solid #334155; }
+
+        .cable-svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        
+        .sidebar-controls { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+        .game-scenario { font-size: 0.95rem; color: #f1f5f9; padding: 12px; background: #0f172a; border-radius: 6px; border-left: 3px solid var(--accent-blue); min-height: 80px; line-height: 1.4; }
+        
+        .media-card {
+            background: #020617;
+            border: 2px solid #475569;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .media-card:hover { border-color: var(--accent-blue); background: #0f172a; }
+        .media-card h4 { color: var(--accent-blue); font-size: 0.95rem; margin-bottom: 2px; }
+        .media-card p { font-size: 0.8rem; color: var(--text-muted); }
+
+        .question-text { font-size: 1.2rem; margin-bottom: 20px; font-weight: 500; line-height: 1.5; }
+        .options-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+        
+        .option-item {
+            background: #334155;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #475569;
+            transition: background 0.2s;
+        }
+        .option-item:hover { background: #475569; }
+        .option-item.correct { background-color: rgba(74, 222, 128, 0.2); border-color: var(--accent-green); }
+        .option-item.wrong { background-color: rgba(248, 113, 113, 0.2); border-color: var(--accent-red); }
+        .explanation { background: #020617; padding: 15px; border-radius: 6px; margin-top: 20px; display: none; line-height: 1.5; font-size: 0.95rem; }
+
+        .dash-card { text-align: center; padding: 20px 0; }
+        .score-display { font-size: 3rem; color: var(--accent-green); font-weight: bold; margin: 15px 0; }
+        .save-indicator { font-size: 0.9rem; color: var(--accent-blue); font-style: italic; margin-top: 15px; }
+
+        footer { margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); text-align: center; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CCNA ARCADE</h1>
+        <h2>Stage 1 • Level 1.2: Ethernet Pinouts (Cisco NetAcad ITN Deep-Dive)</h2>
+    </header>
+
+    <div class="container">
+        <!-- STEP 1: LESSON SCREEN -->
+        <div id="screen-lesson" class="screen active">
+            <p class="lesson-text">
+                Welcome to <strong>OSI Layer 1: Cable Pinouts</strong>. To master Cisco infrastructure deployments, you must map structural cable terminations correctly based on device transmission interfaces managed by the <strong>TIA/EIA-568</strong> standard.
+            </p>
+            
+            <div class="spec-grid">
+                <div class="spec-box">
+                    <h3>1. T568A vs. T568B Standards</h3>
+                    <p>
+                        • <strong>T568A Color Order:</strong> Green/White, Green, Orange/White, Blue, Blue/White, Orange, Brown/White, Brown.<br>
+                        • <strong>T568B Color Order:</strong> Orange/White, Orange, Green/White, Blue, Blue/White, Green, Brown/White, Brown.<br>
+                        • <strong>The Core Difference:</strong> Pins 1 and 2 (Transmit) swap places with Pins 3 and 6 (Receive) between these layout schemes.
+                    </p>
+                </div>
+                <div class="spec-box">
+                    <h3>2. Straight-Through Cables</h3>
+                    <p>
+                        • <strong>Wiring Scheme:</strong> Both alternative cable endpoints utilize identical pin standards (either T568A to T568A, or T568B to T568B).<br>
+                        • <strong>Implementation:</strong> Connects host targets operating at <strong>different layers</strong> of the OSI model.<br>
+                        • <strong>Device Paths:</strong> PC-to-Switch, Switch-to-Router, Switch-to-Access Point, Router-to-Server.
+                    </p>
+                </div>
+                <div class="spec-box">
+                    <h3>3. Crossover Cables</h3>
+                    <p>
+                        • <strong>Wiring Scheme:</strong> One end uses the T568A standard layout while the opposite end switches to the T568B pin configuration.<br>
+                        • <strong>Implementation:</strong> Connects host devices operating at the <strong>same layer</strong> of the OSI framework.<br>
+                        • <strong>Device Paths:</strong> Switch-to-Switch, Router-to-Router, PC-to-PC, and <strong>PC-to-Router</strong> (PCs and Routers transmit data on identical pin structures!).
+                    </p>
+                </div>
+                <div class="spec-box">
+                    <h3>4. Auto-MDIX Technology</h3>
+                    <p>
+                        • <strong>Function:</strong> A Cisco device option that automatically detects cable configuration types and configures interfaces accordingly.<br>
+                        • <strong>CCNA Exam Warning:</strong> You must always assume Auto-MDIX is disabled or missing unless a test question explicitly states otherwise!
+                    </p>
+                </div>
+            </div>
+
+            <button class="btn" onclick="startGameplay()">Initialize Topology Matrix Tool</button>
+        </div>
+
+        <!-- STEP 2: GAMEPLAY SIMULATOR SCREEN -->
+        <div id="screen-game" class="screen">
+            <div class="game-hud">
+                <button class="btn" style="padding: 6px 12px; font-size: 0.85rem; margin: 0; background-color: #475569; color: var(--text-light);" onclick="resetToLesson()">◀ Return to Lesson</button>
+                <div>Matrix Maps: <span id="hud-score">0</span>/4 Calibrated</div>
+                <div style="color: var(--accent-blue);">Topology Canvas</div>
+            </div>
+            
+            <div class="simulator-layout">
+                <div class="canvas-area">
+                    <svg class="cable-svg-layer">
+                        <line id="topo-cable" x1="120" y1="150" x2="380" y2="150" stroke="#334155" stroke-width="4"/>
+                    </svg>
+
+                    <div class="device-node">
+                        <!-- Custom SVG Node Generator -->
+                        <div id="src-svg-wrapper"></div>
+                        <div class="device-label" id="lbl-src">Source_Node</div>
+                    </div>
+
+                    <div class="device-node">
+                        <div id="dst-svg-wrapper"></div>
+                        <div class="device-label" id="lbl-dst">Destination_Node</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-controls">
+                    <div id="scenario-text" class="game-scenario">Evaluating connection requirements...</div>
+                    <div class="media-options">
+                        <div class="media-card" onclick="handleDecision('straight')">
+                            <h4>Copper Straight-Through</h4>
+                            <p>Utilizes unswapped linear pathways. Pins 1-8 run identically at both endpoints.</p>
+                        </div>
+                        <div class="media-card" onclick="handleDecision('crossover')">
+                            <h4>Copper Crossover</h4>
+                            <p>Utilizes shifted endpoints. Crosses Tx and Rx lines by matching a T568A tip to a T568B tip.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: EXAM SCREEN -->
+        <div id="screen-quiz" class="screen">
+            <div class="quiz-container">
+                <div class="game-hud">
+                    <button class="btn" style="padding: 6px 12px; font-size: 0.85rem; margin: 0; background-color: #475569; color: var(--text-light);" onclick="resetToLesson()">◀ Abort Exam to Review</button>
+                    <div style="color: var(--accent-blue);">OFFICIAL CISCO NETACAD CRITERIA CERTIFICATION</div>
+                </div>
+                <div id="quiz-question" class="question-text">Verifying application-layer parameters...</div>
+                <ul class="options-list" id="quiz-options"></ul>
+                <div id="quiz-explanation" class="explanation"></div>
+                <button id="quiz-next-btn" class="btn" style="display:none;" onclick="handleQuizNext()">Submit Next Question</button>
+            </div>
+        </div>
+
+        <!-- STEP 4: DASHBOARD OUTCOME -->
+        <div id="screen-dash" class="screen">
+            <div class="dash-card">
+                <h3 style="font-size: 1.8rem; color: var(--accent-green);">Level Complete! Pinout Architecture Mastered</h3>
+                <p style="margin-top: 10px; color: var(--text-muted);">You successfully achieved 100% compliance across Cisco ITN Module 4 pinout criteria matrix standards.</p>
+                <div class="score-display">100% CERTIFIED</div>
+                <div class="save-indicator">💾 Auto-Save Synchronized: localStorage.ccna_level_1_2 = "NetAcad_Pinouts_Mastered"</div>
+                <button class="btn" style="margin-top:25px;" onclick="resetToLesson()">Re-run Module</button>
+            </div>
+        </div>
+    </div>
+    <footer>
+        &copy; 2026 CCNA Arcade Project Plan. Fully Aligned with Cisco Objectives. All Rights Reserved.
+    </footer>
+    <script>
+        // Inline SVG Layout Definitions for Cisco Device Iconography
+        const deviceSVGs = {
+            pc: `<svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                    <rect x="12" y="10" width="40" height="28" rx="3" fill="#475569" stroke="#cbd5e1" stroke-width="2"/>
+                    <rect x="16" y="14" width="32" height="20" fill="#020617"/>
+                    <path d="M26 38L20 50H44L38 38H26Z" fill="#64748b" stroke="#cbd5e1" stroke-width="2"/>
+                 </svg>`,
+            switch: `<svg width="74" height="54" viewBox="0 0 74 54" fill="none">
+                        <rect x="4" y="10" width="66" height="34" rx="4" fill="#1e3a8a" stroke="#38bdf8" stroke-width="2"/>
+                        <circle cx="16" cy="27" r="4" fill="#4ade80"/><circle cx="28" cy="27" r="4" fill="#4ade80"/><circle cx="40" cy="27" r="4" fill="#4ade80"/>
+                        <rect x="52" y="20" width="6" height="6" fill="#0f172a" stroke="#64748b"/>
+                        <rect x="60" y="20" width="6" height="6" fill="#0f172a" stroke="#64748b"/>
+                     </svg>`,
+            router: `<svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                        <circle cx="32" cy="32" r="24" fill="#0f766e" stroke="#2dd4bf" stroke-width="2"/>
+                        <path d="M16 32H48 M22 26L16 32L22 38 M42 26L48 32L42 38" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                     </svg>`
+        };
+
+        const scenarios = [
+            { text: "Deploy a physical patch cord linking an enterprise Host Workstation interface down to a local corporate access-layer Switch port line.", target: "straight", srcType: "pc", dstType: "switch", srcLabel: "Host_PC", dstLabel: "Floor_Switch", lineType: "solid", lineColor: "#4ade80" },
+            { text: "Establish an infrastructure trunk configuration channel connecting an access-layer distribution Switch fabric straight into another Switch module stack link.", target: "crossover", srcType: "switch", dstType: "switch", srcLabel: "Switch_A", dstLabel: "Switch_B", lineType: "dashed", lineColor: "#38bdf8" },
+            { text: "Run a direct structural link boundary line from an infrastructure Edge Router interface straight into a local core web Server framework.", target: "straight", srcType: "router", dstType: "pc", srcLabel: "Edge_Router", dstLabel: "Web_Server", lineType: "solid", lineColor: "#4ade80" },
+            { text: "Configure a back-to-back testing interface line linking a primary core structural Router interface directly into an alternative secondary core Router node.", target: "crossover", srcType: "router", dstType: "router", srcLabel: "Core_Router_1", dstLabel: "Core_Router_2", lineType: "dashed", lineColor: "#38bdf8" }
+        ];
+
+        const quizPool = [
+            {
+                q: "A network engineer needs to connect a workstation computer directly to a routing interface to run initial configurations without using a switch. What specific cable pinout topology is required to complete this task?",
+                options: ["Copper Straight-Through Cable", "Copper Crossover Cable", "Rollover Loopback Patch Cable", "Shielded Coaxial Line Link"], answer: 1,
+                exp: "<h3>📚 TERM BREAKDOWN ANALYSIS:</h3>• <strong>Copper Crossover Cable (CORRECT):</strong> Workstations (PCs) and Routers both operate as transmit-on-1/2 devices. Connecting them back-to-back without a switch requires crossing the Tx and Rx pairs.<br><br>• <strong>Copper Straight-Through Cable:</strong> Used for connections between devices at different layers, such as a PC-to-Switch or Switch-to-Router.<br><br>• <strong>Rollover Cable:</strong> A specialized terminal cable used to connect a PC's serial port to a Cisco console port for device management, not for passing data traffic.<br><br>• <strong>Shielded Coaxial Line:</strong> A legacy copper broadband cable design that is completely unsupported for standard Ethernet RJ-45 device interfaces."
+            },
+            {
+                q: "When looking at the internal color arrangement of an RJ-45 connector pinned out to the T568B standard, which color code configuration is required for Pin 1 and Pin 2?",
+                options: ["Green/White and Green", "Orange/White and Orange", "Green/White and Orange", "Orange/White and Blue"], answer: 1,
+                exp: "<h3>📚 TERM BREAKDOWN ANALYSIS:</h3>• <strong>Orange/White and Orange (CORRECT):</strong> The T568B standard mandates that the orange wire pair occupies Pin 1 and Pin 2 to serve as the default transmission path.<br><br>• <strong>Green/White and Green:</strong> This layout pattern occupies Pin 1 and Pin 2 under the alternative T568A wiring standard.<br><br>• <strong>Green/White and Orange:</strong> An invalid combination that breaks matching twisted-pair signaling and creates massive signal degradation.<br><br>• <strong>Orange/White and Blue:</strong> A non-standard alignment that separates the differential wire pairs, resulting in line noise and transmission errors."
+            },
+            {
+                q: "An administrator connects two infrastructure switches together using a standard copper patch line. However, the link status light stays amber, and no frames pass. Assuming Auto-MDIX is disabled, what is the cause of this layer 1 fault?",
+                options: ["A straight-through cable was improperly deployed instead of a crossover cable.", "A crossover cable was improperly deployed instead of a straight-through cable.", "A rollover console line was deployed instead of a standard fiber line link.", "The distance parameters exceeded the 550-meter UTP category threshold limit."], answer: 0,
+                exp: "<h3>📚 TERM BREAKDOWN ANALYSIS:</h3>• <strong>Straight-Through instead of Crossover (CORRECT):</strong> Connecting similar devices (like a Switch to a Switch) requires a crossover cable to loop Tx pins to Rx pins. With Auto-MDIX disabled, a straight-through cable will fail.<br><br>• <strong>Crossover instead of Straight-Through:</strong> Deploying a crossover cable is the correct choice here; a straight-through cable would cause the connection to fail.<br><br>• <strong>Rollover instead of Fiber:</strong> While a rollover line would fail to pass network traffic, this scenario outlines an issue with standard copper data wiring parameters, not console cables.<br><br>• <strong>Distance Exceeded Limit:</strong> Standard category copper twisted-pair infrastructure is limited to a physical distance of 100 meters, not 550 meters (which is the limit for Multimode Fiber)."
+            }
+        ];
+        let currentScore = 0;
+        let currentQuizIndex = 0;
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGameplay() {
+            currentScore = 0;
+            document.getElementById('hud-score').innerText = currentScore;
+            
+            const cable = document.getElementById('topo-cable');
+            cable.setAttribute('stroke', '#334155');
+            cable.setAttribute('stroke-dasharray', '0');
+            cable.style.animationPlayState = "paused";
+            
+            showScreen('screen-game');
+            updateScenario();
+        }
+
+        function updateScenario() {
+            if (currentScore >= scenarios.length) {
+                startQuizPhase();
+                return;
+            }
+            const currentItem = scenarios[currentScore];
+            document.getElementById('scenario-text').innerText = currentItem.text;
+            document.getElementById('lbl-src').innerText = currentItem.srcLabel;
+            document.getElementById('lbl-dst').innerText = currentItem.dstLabel;
+            
+            // Render the vector device models dynamically
+            document.getElementById('src-svg-wrapper').innerHTML = deviceSVGs[currentItem.srcType];
+            document.getElementById('dst-svg-wrapper').innerHTML = deviceSVGs[currentItem.dstType];
+            
+            // Clear prior link lines back to uncalibrated gray state
+            const cable = document.getElementById('topo-cable');
+            cable.setAttribute('stroke', '#334155');
+            cable.setAttribute('stroke-dasharray', '0');
+            cable.style.animationPlayState = "paused";
+        }
+
+        function handleDecision(playerChoice) {
+            const currentItem = scenarios[currentScore];
+            const correctAnswer = currentItem.target;
+            const cable = document.getElementById('topo-cable');
+            
+            if (playerChoice === correctAnswer) {
+                // Light up line based on selection requirements
+                cable.setAttribute('stroke', currentItem.lineColor);
+                if (currentItem.lineType === 'dashed') {
+                    cable.setAttribute('stroke-dasharray', '6'); // Standard Cisco blueprint representation for crossover
+                } else {
+                    cable.setAttribute('stroke-dasharray', '0'); // Solid straight-through line
+                }
+                
+                cable.style.animationPlayState = "running";
+                currentScore++;
+                document.getElementById('hud-score').innerText = currentScore;
+                
+                // Allow the student to visually verify the link before progressing to the next card
+                setTimeout(updateScenario, 1200);
+            } else {
+                alert(`Pinout Alignment Error! That selection creates an internal Tx/Rx port collision or dead channel. Verify device OSI layer parameters.`);
+            }
+        }
+
+        function startQuizPhase() {
+            currentQuizIndex = 0;
+            showScreen('screen-quiz');
+            loadQuizQuestion();
+        }
+
+        function loadQuizQuestion() {
+            const currentQ = quizPool[currentQuizIndex];
+            document.getElementById('quiz-question').innerText = currentQ.q;
+            document.getElementById('quiz-explanation').style.display = "none";
+            document.getElementById('quiz-next-btn').style.display = "none";
+            
+            const optionsUl = document.getElementById('quiz-options');
+            optionsUl.innerHTML = "";
+            
+            currentQ.options.forEach((opt, idx) => {
+                const li = document.createElement('li');
+                li.className = "option-item";
+                li.innerText = opt;
+                li.onclick = () => evaluationSelection(idx, li);
+                optionsUl.appendChild(li);
+            });
+        }
+
+        function evaluationSelection(chosenIdx, element) {
+            const currentQ = quizPool[currentQuizIndex];
+            const items = document.querySelectorAll('.option-item');
+            
+            items.forEach(item => item.onclick = null);
+            
+            if (chosenIdx === currentQ.answer) {
+                element.classList.add('correct');
+            } else {
+                element.classList.add('wrong');
+                items[currentQ.answer].classList.add('correct');
+            }
+            
+            const expBox = document.getElementById('quiz-explanation');
+            expBox.innerHTML = currentQ.exp;
+            expBox.style.display = "block";
+            document.getElementById('quiz-next-btn').style.display = "block";
+        }
+
+        function handleQuizNext() {
+            currentQuizIndex++;
+            if (currentQuizIndex < quizPool.length) {
+                loadQuizQuestion();
+            } else {
+                triggerAutosaveAndComplete();
+            }
+        }
+
+        function triggerAutosaveAndComplete() {
+            try {
+                localStorage.setItem('ccna_level_1_2', 'NetAcad_Pinouts_Mastered');
+            } catch(e) {
+                console.log("Local browser serialization fallback tracking bypassed.");
+            }
+            showScreen('screen-dash');
+        }
+
+        function resetToLesson() {
+            showScreen('screen-lesson');
+        }
+    </script>
+</body>
+</html>
+
